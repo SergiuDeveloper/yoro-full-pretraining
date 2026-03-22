@@ -46,20 +46,12 @@ During pretraining, **all parameters are trained end-to-end** (both the base mod
 
 ### Autoregressive mode (inference)
 
-The model generates one token at a time, maintaining a reasoning cache across steps.
+The model generates one token at a time, maintaining a cache of the reasoning output across steps.
 
-```
-First token:
-  tokens → embed_tokens → embedding_subnet → reasoning_subnet → [cache] → coherence_subnet → logits
+1. **First token:** embed → embedding subnet → reasoning subnet → cache output → coherence subnet → logit
+2. **All later tokens:** embed → embedding subnet → compensation subnet (on current step) + adaptation subnet (on cached reasoning) → concatenation subnet → coherence subnet → logit
 
-All subsequent tokens:
-  tokens → embed_tokens → embedding_subnet ─────────────────────────────┐
-                                                                         ↓
-                                              compensation_subnet ──→ concatenation_subnet → coherence_subnet → logits
-                                              adaptation_subnet([cache]) ┘
-```
-
-The reasoning cache is computed once and never updated again.
+The cache is never updated after the first token.
 
 ### Teacher forcing mode (training)
 
